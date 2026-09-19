@@ -240,7 +240,7 @@
     </div>
 
     <!-- TOAST POPUP -->
-    <div id="toast" class="fixed bottom-6 right-6 bg-gray-950 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold transition-all transform translate-y-24 opacity-0 z-50 flex items-center gap-2">
+    <div id="toast" class="fixed bottom-24 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 bg-gray-950 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold transition-all transform translate-y-24 opacity-0 z-50 flex items-center gap-2 pointer-events-none">
         <i class="fas fa-check-circle text-emerald-400"></i>
         <span id="toast-msg">Sucesso!</span>
     </div>
@@ -320,7 +320,16 @@
         const btnAcceptDeliveryWarning = document.getElementById('btn-accept-delivery-warning');
 
         window.addEventListener('load', () => {
-            loadFromLocalStorage();
+            // O catálogo publicado usa os dados incorporados neste HTML.
+            // Isso evita que um localStorage antigo impeça as atualizações feitas pelo painel.
+            products = Array.isArray(defaultProducts) ? defaultProducts.map(product => ({
+                ...product,
+                price: Number(product.price) || 0,
+                category: product.category || 'Geral',
+                desc: product.desc || '',
+                image: product.image || 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400'
+            })) : [];
+
             updateStoreUI();
             renderCategoryFilters();
             renderClientCatalog();
@@ -589,9 +598,20 @@
 
         function showToast(message) {
             const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').textContent = message;
+            const toastMsg = document.getElementById('toast-msg');
+
+            if (!toast || !toastMsg) return;
+
+            toastMsg.textContent = message;
             toast.classList.remove('translate-y-24', 'opacity-0');
-            setTimeout(() => toast.add('translate-y-24', 'opacity-0'), 2500);
+
+            if (window.toastTimeout) {
+                clearTimeout(window.toastTimeout);
+            }
+
+            window.toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 2500);
         }
     </script>
 </body>
